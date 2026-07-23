@@ -1,25 +1,42 @@
 "use client";
 
 import { MapPin, ArrowRight, ArrowDown } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useRef } from "react";
 import Lenis from "lenis";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 import ProfileCard from "@/components/ProfileCard";
 import SpecularButton from "@/components/SpecularButton";
 
-export default function Hero() {
-  const [offsetY, setOffsetY] = useState(0);
+gsap.registerPlugin(useGSAP);
 
-  useEffect(() => {
-    function onScroll() {
-      const y = window.scrollY;
-      const max = window.innerHeight * 1.3;
-      if (y < max) {
-        setOffsetY(y * 0.05);
-      }
-    }
+export default function Hero() {
+  const heroRef = useRef<HTMLElement>(null);
+  const parallaxRef = useRef<HTMLDivElement>(null);
+
+  // Direct DOM scroll parallax — no React re-renders
+  useGSAP(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const el = parallaxRef.current;
+    if (!el) return;
+    // Init transform so mobile browser composites the layer before animations start
+    el.style.transform = "translateY(0px)";
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        const max = window.innerHeight * 1.3;
+        el.style.transform = y < max
+          ? `translateY(${(y * 0.05).toFixed(1)}px)`
+          : `translateY(${(max * 0.05).toFixed(1)}px)`;
+        ticking = false;
+      });
+      ticking = true;
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, { scope: heroRef, dependencies: [] });
 
   const scrollTo = useCallback((id: string) => {
     const el = document.getElementById(id);
@@ -33,8 +50,85 @@ export default function Hero() {
     }
   }, []);
 
+  // --- GSAP text reveal + enhanced entrance animations ---
+  useGSAP(() => {
+    const section = heroRef.current;
+    if (!section) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    // Split text into word spans for stagger reveal
+    const textEls = section.querySelectorAll<HTMLElement>(
+      ".hero-name, .hero-role, .hero-lede"
+    );
+    textEls.forEach((el) => {
+      if (el.dataset.gsapSplit) return;
+      const childNodes = Array.from(el.childNodes);
+      el.innerHTML = "";
+      childNodes.forEach((node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          (node.textContent || "").split(/(\s+)/).forEach((part) => {
+            if (!part) return;
+            if (/^\s+$/.test(part)) {
+              el.appendChild(document.createTextNode(" "));
+              return;
+            }
+            const span = document.createElement("span");
+            span.className = "gsap-word";
+            span.textContent = part;
+            span.style.display = "inline-block";
+            el.appendChild(span);
+          });
+        } else {
+          el.appendChild(node.cloneNode(true));
+        }
+      });
+      el.dataset.gsapSplit = "true";
+    });
+
+    // Word stagger reveal (fires after CSS heroIn completes)
+    gsap.from(".gsap-word", {
+      y: 20,
+      autoAlpha: 0,
+      stagger: 0.04,
+      duration: 0.4,
+      ease: "power3.out",
+      delay: (_i: number, el: Element) => {
+        const parent = el.closest("[data-hero]") as HTMLElement | null;
+        const d = parent
+          ? parseFloat(parent.style.getPropertyValue("--d") || "0.3")
+          : 0.3;
+        return d + 0.6;
+      },
+    });
+
+    // Enhanced status-dot continuous pulse
+    gsap.to(".status-dot", {
+      scale: 1.35,
+      duration: 0.8,
+      repeat: -1,
+      yoyo: true,
+      ease: "power1.inOut",
+      transformOrigin: "center center",
+    });
+
+    // Enhanced scroll-cue dot — smooth continuous loop
+    gsap.to(".cue-dot", {
+      y: 44,
+      duration: 2.0,
+      repeat: -1,
+      ease: "power1.inOut",
+    });
+    gsap.to(".cue-dot", {
+      autoAlpha: 0.25,
+      duration: 2.0,
+      repeat: -1,
+      yoyo: true,
+      ease: "power1.inOut",
+    });
+  }, { scope: heroRef, dependencies: [] });
+
   return (
-    <section id="home" className="hero">
+    <section ref={heroRef} id="home" className="hero">
       <div className="container hero-grid">
         <div className="hero-copy">
           <p className="status" data-hero style={{ "--d": "0.05s" } as React.CSSProperties}>
@@ -102,8 +196,8 @@ export default function Hero() {
           style={{ "--d": "0.3s" } as React.CSSProperties}
         >
           <div
+            ref={parallaxRef}
             className="hero-parallax"
-            style={{ transform: `translateY(${offsetY.toFixed(1)}px)` }}
           >
             <ProfileCard
               avatarUrl="https://image.qwenlm.ai/public_source/6f86c30a-277c-406e-85df-03fdf435d303/1c216c180-f9a0-41db-96b1-3d4cac21fa2f.png"

@@ -1,5 +1,8 @@
 "use client";
 
+import { useState, useRef, useEffect, useCallback } from "react";
+import { ChevronDown } from "lucide-react";
+
 const projects = [
   {
     num: "01",
@@ -56,9 +59,74 @@ const projects = [
     featured: false,
     toast: "Live demo for Haven — coming soon.",
   },
+  {
+    num: "06",
+    title: "Pulse",
+    category: "HEALTH",
+    year: "2024",
+    desc: "Patient portal for a telehealth startup — appointment booking, prescription tracking, and secure messaging in one calm interface.",
+    tags: ["REACT", "FIREBASE", "TWILIO"],
+    img: "https://image.qwenlm.ai/public_source/6f86c30a-277c-406e-85df-03fdf435d303/1f9808b28-a543-4872-825f-6dfd334baa45.png",
+    featured: false,
+    toast: "Live demo for Pulse — coming soon.",
+  },
+  {
+    num: "07",
+    title: "Canopy",
+    category: "EDUCATION",
+    year: "2023",
+    desc: "Learning management system for a coding bootcamp — course progress, live sessions, and assignment grading for 200+ students.",
+    tags: ["NEXT.JS", "POSTGRESQL", "WEBSOCKET"],
+    img: "https://image.qwenlm.ai/public_source/6f86c30a-277c-406e-85df-03fdf435d303/1eeb9ae9e-a43c-45a6-a233-77927c21109d.png",
+    featured: false,
+    toast: "Live demo for Canopy — coming soon.",
+  },
+  {
+    num: "08",
+    title: "Ridgeline",
+    category: "LOGISTICS",
+    year: "2023",
+    desc: "Fleet tracking dashboard for a delivery company — live map, route optimisation, and driver scorecards replaced a wall of spreadsheets.",
+    tags: ["TYPESCRIPT", "MAPBOX", "REDIS"],
+    img: "https://image.qwenlm.ai/public_source/6f86c30a-277c-406e-85df-03fdf435d303/1f3c91b19-24e0-4d80-add1-7c5952725487.png",
+    featured: false,
+    toast: "Live demo for Ridgeline — coming soon.",
+  },
 ];
 
+const INITIAL_COUNT = 5;
+
 export default function Projects() {
+  const [showAll, setShowAll] = useState(false);
+  const [revealed, setRevealed] = useState(false);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  const visible = showAll ? projects : projects.slice(0, INITIAL_COUNT);
+  const hasMore = projects.length > INITIAL_COUNT;
+  const extraCount = projects.length - INITIAL_COUNT;
+
+  // Trigger fade-in for new cards after expand
+  useEffect(() => {
+    if (!showAll || !gridRef.current) {
+      setRevealed(false);
+      return;
+    }
+    // Double-rAF: first frame paints opacity:0, second frame triggers the transition
+    let raf1: number;
+    let raf2: number;
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        setRevealed(true);
+      });
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, [showAll]);
+
+  const toggle = useCallback(() => setShowAll((v) => !v), []);
+
   return (
     <section id="projects" className="section">
       <div className="container">
@@ -69,104 +137,154 @@ export default function Projects() {
               Work that shipped, scaled, and stuck.
             </h2>
           </div>
-          <p className="head-note">5 Projects · 2023 — 2026</p>
+          <p className="head-note">
+            {projects.length} Projects · 2023 — 2026
+          </p>
         </div>
-        <div className="projects-grid">
-          {projects.map((p, i) => (
-            <article
-              key={p.num}
-              className={`project-card${p.featured ? " featured" : ""}`}
-              data-reveal
-              style={{ "--rd": `${i * 0.07}s` } as React.CSSProperties}
-            >
-              <a
-                className="project-media"
-                href="#"
-                data-toast={p.toast}
-              >
-                <img
-                  src={p.img}
-                  alt={`${p.title} preview`}
-                  width={1200}
-                  height={900}
-                  loading="lazy"
-                  decoding="async"
-                  onError={(e) => e.currentTarget.style.display = "none"}
-                />
-              </a>
-              <div className="project-body">
-                <p className="project-meta mono">
-                  <span className="num">{p.num}</span>
-                  <span>
-                    {p.category} · {p.year}
-                  </span>
-                </p>
-                <h3 className="project-title">
-                  {p.title}{" "}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="17"
-                    height="17"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.75"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+
+        <div
+          className={`projects-grid-wrap${showAll ? " is-expanded" : ""}`}
+          ref={gridRef}
+        >
+          <div className="projects-grid">
+            {visible.map((p, i) => {
+              const isExtra = i >= INITIAL_COUNT;
+              return (
+                <article
+                  key={p.num}
+                  className={[
+                    "project-card",
+                    p.featured && !showAll ? "featured" : "",
+                    isExtra && !revealed ? "project-card--hidden" : "",
+                    isExtra && revealed ? "project-card--visible" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  style={{
+                    "--rd": `${i * 0.07}s`,
+                    transitionDelay: isExtra ? `${(i - INITIAL_COUNT) * 0.08}s` : "0s",
+                  } as React.CSSProperties}
+                >
+                  <a
+                    className="project-media"
+                    href="#"
+                    data-toast={p.toast}
                   >
-                    <path d="M7 7h10v10" />
-                    <path d="M7 17 17 7" />
-                  </svg>
-                </h3>
-                <p className="project-desc">{p.desc}</p>
-                <ul className="tag-list">
-                  {p.tags.map((t) => (
-                    <li key={t} className="tag mono">
-                      {t}
-                    </li>
-                  ))}
-                </ul>
-                <div className="project-links">
-                  <a href="#" data-toast={p.toast}>
-                    Live Demo{" "}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.75"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M15 3h6v6" />
-                      <path d="M10 14 21 3" />
-                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                    </svg>
+                    <img
+                      src={p.img}
+                      alt={`${p.title} preview`}
+                      width={1200}
+                      height={900}
+                      loading="lazy"
+                      decoding="async"
+                      onError={(e) =>
+                        (e.currentTarget.style.display = "none")
+                      }
+                    />
                   </a>
-                  <a href="#" data-toast={p.toast}>
-                    Case Study{" "}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.75"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M7 7h10v10" />
-                      <path d="M7 17 17 7" />
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            </article>
-          ))}
+                  <div className="project-body">
+                    <p className="project-meta mono">
+                      <span className="num">{p.num}</span>
+                      <span>
+                        {p.category} · {p.year}
+                      </span>
+                    </p>
+                    <h3 className="project-title">
+                      {p.title}{" "}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="17"
+                        height="17"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.75"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M7 7h10v10" />
+                        <path d="M7 17 17 7" />
+                      </svg>
+                    </h3>
+                    <p className="project-desc">{p.desc}</p>
+                    <ul className="tag-list">
+                      {p.tags.map((t) => (
+                        <li key={t} className="tag mono">
+                          {t}
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="project-links">
+                      <a href="#" data-toast={p.toast}>
+                        Live Demo{" "}
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.75"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M15 3h6v6" />
+                          <path d="M10 14 21 3" />
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                        </svg>
+                      </a>
+                      <a href="#" data-toast={p.toast}>
+                        Case Study{" "}
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.75"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M7 7h10v10" />
+                          <path d="M7 17 17 7" />
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         </div>
+
+        {hasMore && (
+          <div className="projects-footer">
+            <p className="projects-counter mono">
+              {showAll
+                ? `Showing 1–${projects.length} of ${projects.length}`
+                : `Showing 1–${INITIAL_COUNT} of ${projects.length}`}
+            </p>
+            <button
+              className="btn btn-ghost projects-more-btn"
+              onClick={toggle}
+              aria-expanded={showAll}
+            >
+              {showAll
+                ? "Show Less"
+                : `See All ${projects.length} Projects`}
+              <ChevronDown
+                className="lucide"
+                style={{
+                  transform: showAll
+                    ? "rotate(180deg)"
+                    : "rotate(0deg)",
+                  transition: "transform 0.3s var(--ease)",
+                }}
+              />
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

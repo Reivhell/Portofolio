@@ -1,0 +1,208 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1200" height="360" viewBox="0 0 1200 360"
+     role="img" aria-labelledby="hero-title hero-desc">
+  <title id="hero-title">Ahmad David Alvees — Portfolio</title>
+  <desc id="hero-desc">Next.js portfolio with GSAP animations, 3D profile card, and editorial-craft design.</desc>
+
+  <defs>
+    <!-- Card shadow filter -->
+    <filter id="card-shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#16140E" flood-opacity="0.08"/>
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#16140E" flood-opacity="0.03"/>
+    </filter>
+
+    <!-- Tilt card shadow -->
+    <filter id="tilt-shadow" x="-20%" y="-20%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="18" stdDeviation="28" flood-color="#16140E" flood-opacity="0.10"/>
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#16140E" flood-opacity="0.04"/>
+    </filter>
+
+    <!-- Subtle glow -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Accent gradient -->
+    <linearGradient id="accent-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3A5A46"/>
+      <stop offset="100%" stop-color="#2D4936"/>
+    </linearGradient>
+
+    <!-- Card gradient bg -->
+    <linearGradient id="card-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FBFAF5"/>
+      <stop offset="100%" stop-color="#F1EFE8"/>
+    </linearGradient>
+
+    <!-- Portrait gradient fallback -->
+    <radialGradient id="portrait-bg" cx="40%" cy="40%">
+      <stop offset="0%" stop-color="#E3EAE2"/>
+      <stop offset="100%" stop-color="#A9C4AE"/>
+    </radialGradient>
+
+    <!-- Clip Path for card image -->
+    <clipPath id="card-clip">
+      <rect x="703" y="36" width="260" height="300" rx="22"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="360" rx="26" fill="#F1EFE8"/>
+
+  <!-- Subtle background watermark -->
+  <text x="1200" y="308" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"
+        font-size="200" font-weight="800" fill="#16140E" fill-opacity="0.03"
+        text-anchor="end" letter-spacing="-0.04">AV.</text>
+
+  <!-- ====== LEFT BLOCK: Title ====== -->
+  <g transform="translate(48 0)">
+
+    <!-- Eyebrow / category -->
+    <rect x="0" y="52" width="20" height="1.5" rx="1" fill="#3A5A46" opacity="0.5"/>
+    <text x="30" y="57" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"
+          font-size="12" font-weight="700" fill="#3A5A46" letter-spacing="2">
+      FRONTEND · PORTFOLIO
+    </text>
+
+    <!-- Status dot + text -->
+    <circle cx="0" cy="88" r="4" fill="#3A5A46"/>
+    <text x="14" y="93" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"
+          font-size="11" font-weight="700" fill="#5D5847" letter-spacing="1.5">
+      AVAILABLE — Q3 2026
+    </text>
+
+    <!-- Name -->
+    <text x="0" y="148" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"
+          font-size="46" font-weight="800" fill="#16140E" letter-spacing="-1.5">
+      Ahmad David Alvees
+    </text>
+    <text x="0" y="194" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"
+          font-size="46" font-weight="800" fill="#3A5A46" letter-spacing="-1.5">
+      Portfolio<tspan fill="#16140E">.</tspan>
+    </text>
+
+    <!-- Description -->
+    <text x="0" y="240" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"
+          font-size="16" fill="#5D5847" letter-spacing="0">
+      <tspan x="0" dy="0">A polished portfolio built with Next.js, GSAP, and Framer Motion —</tspan>
+      <tspan x="0" dy="24">featuring scroll-driven animations, 3D interactions, and editorial craft.</tspan>
+    </text>
+
+    <!-- Tags / tech stack -->
+    <g transform="translate(0 290)">
+      <rect x="0" y="0" width="108" height="28" rx="14" fill="#E3EAE2"/>
+      <text x="54" y="18" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"
+            font-size="11" font-weight="700" fill="#3A5A46" text-anchor="middle">Next.js 16</text>
+
+      <rect x="118" y="0" width="68" height="28" rx="14" fill="#E3EAE2"/>
+      <text x="152" y="18" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"
+            font-size="11" font-weight="700" fill="#3A5A46" text-anchor="middle">GSAP</text>
+
+      <rect x="196" y="0" width="106" height="28" rx="14" fill="#E3EAE2"/>
+      <text x="249" y="18" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"
+            font-size="11" font-weight="700" fill="#3A5A46" text-anchor="middle">Framer Motion</text>
+
+      <rect x="312" y="0" width="100" height="28" rx="14" fill="#E3EAE2"/>
+      <text x="362" y="18" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"
+            font-size="11" font-weight="700" fill="#3A5A46" text-anchor="middle">Tailwind CSS</text>
+
+      <rect x="422" y="0" width="94" height="28" rx="14" fill="#E3EAE2"/>
+      <text x="469" y="18" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"
+            font-size="11" font-weight="700" fill="#3A5A46" text-anchor="middle">shadcn/ui</text>
+    </g>
+  </g>
+
+  <!-- ====== RIGHT BLOCK: Profile Card Visual ====== -->
+  <g transform="translate(700 0)">
+
+    <!-- Decorative card behind main one (slight rotation) -->
+    <g transform="translate(0 0)">
+      <rect x="14" y="20" width="280" height="320" rx="24" fill="#E9E5D9"
+            transform="rotate(4 154 180)"/>
+    </g>
+
+    <!-- Main card -->
+    <g filter="url(#tilt-shadow)" transform="rotate(-1.5 180 180)">
+      <rect x="0" y="18" width="280" height="322" rx="24" fill="url(#card-bg)"
+            stroke="#DCD7C8" stroke-width="1"/>
+
+      <!-- Card content area (simplified) -->
+
+      <!-- Greeting label -->
+      <text x="24" y="68" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"
+            font-size="10" font-weight="700" fill="#7C7660" letter-spacing="1.5"
+            transform="translate(0, 0)">HELLO I'M</text>
+
+      <!-- First name -->
+      <text x="24" y="104" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"
+            font-size="32" font-weight="800" fill="#16140E" letter-spacing="-0.5">
+        Ahmad<tspan dx="0" dy="32" fill="#3A5A46">David</tspan>
+      </text>
+
+      <!-- Role -->
+      <text x="24" y="170" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"
+            font-size="10" font-weight="700" fill="#7C7660" letter-spacing="1.5">
+        FULL-STACK · MOBILE DEVELOPER
+      </text>
+
+      <!-- Divider line -->
+      <line x1="24" y1="193" x2="56" y2="193" stroke="#DCD7C8" stroke-width="1"/>
+
+      <!-- Description -->
+      <text x="24" y="214" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"
+            font-size="11" fill="#5D5847">
+        <tspan x="24" dy="0">Design-minded engineer building</tspan>
+        <tspan x="24" dy="17">performant digital products with</tspan>
+        <tspan x="24" dy="17">clean architecture.</tspan>
+      </text>
+
+      <!-- Status chips -->
+      <g transform="translate(20 284)">
+        <rect x="4" y="0" width="80" height="26" rx="10" fill="#FBFAF5"
+              stroke="#DCD7C8" stroke-width="0.7"/>
+        <text x="44" y="17" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"
+              font-size="10" font-weight="600" fill="#16140E" text-anchor="middle">Banjarmasin</text>
+
+        <rect x="92" y="0" width="58" height="26" rx="10" fill="#FBFAF5"
+              stroke="#DCD7C8" stroke-width="0.7"/>
+        <text x="121" y="17" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"
+              font-size="10" font-weight="600" fill="#16140E" text-anchor="middle">GMT+8</text>
+
+        <rect x="158" y="0" width="80" height="26" rx="10" fill="#3A5A46"/>
+        <circle cx="174" cy="13" r="3" fill="#A9C4AE"/>
+        <text x="181" y="17" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"
+              font-size="10" font-weight="600" fill="#FBFAF5">Available</text>
+      </g>
+
+      <!-- Portrait circle (right side, overlapping) -->
+      <circle cx="218" cy="98" r="50" fill="url(#portrait-bg)"
+              stroke="#FBFAF5" stroke-width="3"
+              filter="url(#card-shadow)"/>
+      <text x="218" y="104" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"
+            font-size="22" font-weight="700" fill="#3A5A46" text-anchor="middle">AD</text>
+      <!-- Inner decorative glow -->
+      <circle cx="218" cy="98" r="48" fill="none" stroke="#3A5A46" stroke-width="0.5" opacity="0.15"/>
+
+      <!-- Bottom "Let's Talk" bar -->
+      <rect x="16" y="308" width="248" height="42" rx="12" fill="#FBFAF5" opacity="0.9"
+            stroke="#DCD7C8" stroke-width="0.5"/>
+      <text x="32" y="334" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"
+            font-size="11" font-weight="600" fill="#16140E">Ahmad David Alvees</text>
+      <text x="32" y="346" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"
+            font-size="9" fill="#3A5A46" font-weight="600">Online</text>
+
+      <!-- CTA Button -->
+      <rect x="184" y="314" width="72" height="30" rx="10" fill="#3A5A46"/>
+      <text x="220" y="334" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"
+            font-size="12" font-weight="600" fill="#F6F5EF" text-anchor="middle">Let's Talk</text>
+    </g>
+
+    <!-- Cursor reflection sweep mark (decorative) -->
+    <ellipse cx="140" cy="80" rx="60" ry="60" fill="#FFF" opacity="0.06"/>
+  </g>
+
+  <!-- Linking line (subtle connector between visual and text content) -->
+  <line x1="680" y1="295" x2="700" y2="295"
+        stroke="#3A5A46" stroke-width="0.5" opacity="0.2"/>
+</svg>

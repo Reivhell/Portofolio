@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   motion,
   useMotionValue,
@@ -10,6 +10,10 @@ import {
 } from "motion/react";
 import CardFront from "@/components/CardFront";
 import CardBack from "@/components/CardBack";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+
+gsap.registerPlugin(useGSAP);
 
 export interface ProfileCardProps {
   avatarUrl?: string;
@@ -57,26 +61,107 @@ export default function ProfileCard({
   // Hover scale
   const hoverScale = useSpring(1, { stiffness: 400, damping: 30 });
 
-  // ─── Flip rotation as a spring (for smooth cross-browser animation) ───
-  const flipRotateY = useSpring(0, {
-    stiffness: 200,
-    damping: 25,
-    mass: 0.8,
-  });
+  // ─── Flip orchestrated via per-property GSAP tweens ───
+  // Each property gets its own proxy + ease curve, eliminating
+  // the linear segment stiffness of useTransform keyframes.
+  const roty = useRef({ v: 0 }).current;
+  const posx = useRef({ v: 0 }).current;
+  const posy = useRef({ v: 0 }).current;
+  const sc = useRef({ v: 1 }).current;
+  const tiltx = useRef({ v: 0 }).current;
+  const rev = useRef({ v: 0 }).current;
+
+  // Motion values updated by GSAP on every frame
+  const flipRotateY = useMotionValue(0);
+  const flipX = useMotionValue(0);
+  const flipY = useMotionValue(0);
+  const flipScale = useMotionValue(1);
+  const flipTiltX = useMotionValue(0);
+  const backReveal = useMotionValue(0);
+
+  const tlRef = useRef<gsap.core.Timeline | null>(null);
 
   useEffect(() => {
-    flipRotateY.set(isFlipped ? 180 : 0);
-  }, [isFlipped, flipRotateY]);
+    if (prefersReducedMotion) {
+      flipRotateY.set(isFlipped ? 180 : 0);
+      flipX.set(0); flipY.set(0); flipScale.set(1); flipTiltX.set(0);
+      backReveal.set(isFlipped ? 1 : 0);
+      return;
+    }
+
+    // Sync proxies to current motion values (for smooth interrupt)
+    roty.v = flipRotateY.get();
+    posx.v = flipX.get();
+    posy.v = flipY.get();
+    sc.v = flipScale.get();
+    tiltx.v = flipTiltX.get();
+    rev.v = backReveal.get();
+
+    tlRef.current?.kill();
+
+    function sync() {
+      flipRotateY.set(roty.v);
+      flipX.set(posx.v);
+      flipY.set(posy.v);
+      flipScale.set(sc.v);
+      flipTiltX.set(tiltx.v);
+      backReveal.set(rev.v);
+    }
+
+    const tl = gsap.timeline({ onUpdate: sync });
+
+    if (isFlipped) {
+      // ── Phase 1: Anticipation (0→0.35s) — slow withdraw ──
+      tl.to(roty,  { v: -15, duration: 0.35, ease: "power3.out" }, 0);
+      tl.to(posx,  { v: -20, duration: 0.35, ease: "power3.out" }, 0);
+      tl.to(posy,  { v: -5,  duration: 0.35, ease: "power3.out" }, 0);
+      tl.to(sc,    { v: 0.97,duration: 0.35, ease: "power3.out" }, 0);
+      tl.to(tiltx, { v: -4,  duration: 0.35, ease: "power3.out" }, 0);
+
+      // ── Phase 2: Main flip (0.35→1.1s) — smooth arc ──
+      tl.to(roty,  { v: 178, duration: 0.75, ease: "power3.inOut" }, 0.35);
+      tl.to(posx,  { v: 28,  duration: 0.75, ease: "power3.inOut" }, 0.35);
+      tl.to(posy,  { v: -14, duration: 0.75, ease: "power3.inOut" }, 0.35);
+      tl.to(sc,    { v: 1.08,duration: 0.75, ease: "power3.inOut" }, 0.35);
+      tl.to(tiltx, { v: 5,   duration: 0.75, ease: "power3.inOut" }, 0.35);
+
+      // ── Back content reveal (0.7→1.1s) ──
+      tl.to(rev,   { v: 1,   duration: 0.4,  ease: "power2.out" }, 0.7);
+
+      // ── Phase 3: Settle (1.1→1.5s) — soft bounce landing ──
+      tl.to(roty,  { v: 180, duration: 0.4,  ease: "back.out(1.15)" }, 1.1);
+      tl.to(posx,  { v: 0,   duration: 0.4,  ease: "back.out(1.15)" }, 1.1);
+      tl.to(posy,  { v: 0,   duration: 0.4,  ease: "back.out(1.15)" }, 1.1);
+      tl.to(sc,    { v: 1,   duration: 0.4,  ease: "back.out(1.15)" }, 1.1);
+      tl.to(tiltx, { v: 0,   duration: 0.4,  ease: "back.out(1.15)" }, 1.1);
+    } else {
+      // ── Reverse flip (faster, snappier return) ──
+      tl.to(rev,   { v: 0,   duration: 0.15, ease: "power2.in" }, 0);
+      tl.to(roty,  { v: 0,   duration: 0.5,  ease: "power3.inOut" }, 0);
+      tl.to(posx,  { v: 0,   duration: 0.5,  ease: "power3.out" }, 0);
+      tl.to(posy,  { v: 0,   duration: 0.5,  ease: "power3.out" }, 0);
+      tl.to(sc,    { v: 1,   duration: 0.5,  ease: "power3.out" }, 0);
+      tl.to(tiltx, { v: 0,   duration: 0.5,  ease: "power3.out" }, 0);
+    }
+
+    tlRef.current = tl;
+  }, [isFlipped, prefersReducedMotion]);
 
   // ─── Combined transform as a SINGLE CSS property ───
   // Firefox doesn't handle individual properties (rotateX, scale) correctly
   // with transform-style: preserve-3d. A single transform string works everywhere.
   const cardTransform = useTransform(
-    [tiltX, tiltY, flipRotateY, hoverScale],
-    ([rx, ry, flip, s]: number[]) => {
+    [tiltX, tiltY, hoverScale, flipX, flipY, flipRotateY, flipScale, flipTiltX],
+    ([rx, ry, s, fx, fy, fry, fs, ftx]: number[]) => {
       const rxEff = prefersReducedMotion || isFlipped ? 0 : rx;
       const ryEff = prefersReducedMotion || isFlipped ? 0 : ry;
-      return `rotateX(${rxEff}deg) rotateY(${ryEff + flip}deg) scale(${s})`;
+      return [
+        `translateX(${fx}px)`,
+        `translateY(${fy}px)`,
+        `rotateX(${rxEff + ftx}deg)`,
+        `rotateY(${ryEff + fry}deg)`,
+        `scale(${s * fs})`,
+      ].join(" ");
     },
   );
 
@@ -119,6 +204,50 @@ export default function ProfileCard({
     [handleFlip],
   );
 
+  const sweepSpotRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    if (prefersReducedMotion || !sweepSpotRef.current) return;
+
+    const el = sweepSpotRef.current;
+    const entryWrapper = el.parentElement?.parentElement;
+    if (!entryWrapper) return;
+
+    // Cursor-following quickTo setters (smooth follow-behind)
+    const toX = gsap.quickTo(el, "x", {
+      duration: 0.6,
+      ease: "power2.out",
+    });
+    const toY = gsap.quickTo(el, "y", {
+      duration: 0.6,
+      ease: "power2.out",
+    });
+    const toOpacity = gsap.quickTo(el, "opacity", {
+      duration: 0.3,
+    });
+
+    const onMove = (e: PointerEvent) => {
+      const rect = entryWrapper.getBoundingClientRect();
+      toX(e.clientX - rect.left - 60);
+      toY(e.clientY - rect.top - 60);
+      toOpacity(1);
+    };
+
+    const onLeave = () => toOpacity(0);
+
+    entryWrapper.addEventListener("pointermove", onMove);
+    entryWrapper.addEventListener("pointerleave", onLeave);
+
+    return () => {
+      entryWrapper.removeEventListener("pointermove", onMove);
+      entryWrapper.removeEventListener("pointerleave", onLeave);
+    };
+  }, {
+    scope: sweepSpotRef,
+    dependencies: [prefersReducedMotion],
+    revertOnUpdate: true,
+  });
+
   return (
     <motion.div
       className={`relative mx-auto w-full aspect-[420/650] max-w-[420px] max-h-[90dvh] ${className}`}
@@ -157,6 +286,16 @@ export default function ProfileCard({
           initial={{ x: "-120%" }}
           animate={isHovered ? { x: "220%" } : { x: "-120%" }}
           transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+        />
+        {/* GSAP cursor-follow highlight */}
+        <div
+          ref={sweepSpotRef}
+          className="absolute size-[120px] rounded-full opacity-0"
+          style={{
+            background:
+              "radial-gradient(circle at center, rgba(241,239,232,0.45) 0%, transparent 65%)",
+          }}
+          aria-hidden="true"
         />
       </motion.div>
 
@@ -243,6 +382,7 @@ export default function ProfileCard({
                 linkedinUrl={linkedinUrl}
                 email={email}
                 twitterUrl={twitterUrl}
+                revealProgress={prefersReducedMotion ? undefined : backReveal}
               />
             </div>
           </div>

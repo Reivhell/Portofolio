@@ -2,6 +2,8 @@
 
 import { Quote } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 
 const cards = [
   {
@@ -68,13 +70,15 @@ function TestimonialCard({ c }: { c: (typeof cards)[0] }) {
 
 export default function Testimonials() {
   const trackRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
 
+  // Dynamically set marquee speed based on content width
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
 
     const reduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
+      "(prefers-reduced-motion: reduce)",
     ).matches;
     if (reduced) return;
 
@@ -82,13 +86,86 @@ export default function Testimonials() {
     if (w > 0) {
       track.style.setProperty(
         "--marquee-dur",
-        Math.max(30, w / 40).toFixed(1) + "s"
+        Math.max(30, w / 40).toFixed(1) + "s",
       );
     }
   }, []);
 
+  // GSAP ticker — 3D fisheye tunnel with depth-of-field blur + organic bob
+  useGSAP(
+    () => {
+      const track = trackRef.current;
+      const section = sectionRef.current;
+      if (!track || !section) return;
+
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      const cards = track.querySelectorAll<HTMLElement>(".t-card");
+      if (!cards.length) return;
+
+      function tick() {
+        const half = window.innerWidth * 0.5;
+        // gsap.ticker.time is a property, not a function
+        const time = gsap.ticker.time;
+
+        cards.forEach((card) => {
+          const rect = card.getBoundingClientRect();
+          const cardCenter = rect.left + rect.width / 2;
+          const dist = (cardCenter - window.innerWidth / 2) / half;
+          const clamped = Math.min(1, Math.max(-1, dist));
+          const abs = Math.abs(clamped);
+
+          // 3D fisheye: extreme tilt at edges, face-on at center
+          const rotateY = clamped * -45;
+          // Skew tunnel: adds velocity shear for a speed-through feel
+          const skewX = clamped * 5;
+          // Scale bulge: center card looms large, edges recede into depth
+          const scale = 1 - abs * 0.48;
+          // Depth fade: edges dissolve into the vignette
+          const opacity = 1 - abs * 0.55;
+
+          // Depth-of-field: blur at edges, bright + sharp at center
+          const blur = (abs * 1.8).toFixed(1);
+          const bright = 1 + (1 - abs) * 0.15;
+          card.style.filter =
+            blur !== "0.0"
+              ? `blur(${blur}px) brightness(${bright.toFixed(2)})`
+              : `brightness(${bright.toFixed(2)})`;
+
+          // Organic vertical bob: dual-frequency, each card on its own wave
+          const phase = cardCenter * 0.004 + time * 0.45;
+          const bob =
+            Math.sin(phase) * 3 + Math.sin(phase * 2.5 + 1.2) * 1.5;
+
+          // Center spotlight glow
+          const glow = 1 - abs;
+          const boxShadow =
+            glow > 0.05
+              ? `0 0 ${8 + glow * 36}px rgba(58, 90, 70, ${(
+                  glow * 0.35
+                ).toFixed(2)})`
+              : "var(--shadow-flat)";
+
+          gsap.set(card, {
+            rotateY,
+            skewX,
+            scale,
+            opacity,
+            y: bob,
+            boxShadow,
+            force3D: true,
+          });
+        });
+      }
+
+      gsap.ticker.add(tick);
+      return () => gsap.ticker.remove(tick);
+    },
+    { scope: sectionRef },
+  );
+
   return (
-    <section id="testimonials" className="section">
+    <section id="testimonials" className="section" ref={sectionRef}>
       <div className="container">
         <div className="section-head center" data-reveal>
           <p className="eyebrow mono">07 · Kind Words</p>

@@ -1,8 +1,13 @@
 "use client";
 
-import { motion } from "motion/react";
+import { useRef } from "react";
+import { motion, useReducedMotion, type MotionValue } from "motion/react";
 import { Globe, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+
+gsap.registerPlugin(useGSAP);
 
 interface CardBackProps {
   avatarUrl?: string;
@@ -14,6 +19,7 @@ interface CardBackProps {
   linkedinUrl?: string;
   email?: string;
   twitterUrl?: string;
+  revealProgress?: MotionValue<number>;
 }
 
 function getInitials(name: string): string {
@@ -32,8 +38,9 @@ const DEFAULT_SKILLS = [
   "Node.js",
   "PostgreSQL",
   "Docker",
-  "Prisma",
-  "Framer Motion",
+  "Laravel",
+  "ShadCN",
+  "Tailwind CSS"
 ];
 
 const stagger = {
@@ -60,15 +67,70 @@ export default function CardBack({
   linkedinUrl,
   email,
   twitterUrl,
+  revealProgress,
 }: CardBackProps) {
   const initials = getInitials(name);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const skillsRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = useReducedMotion();
+
+  useGSAP(() => {
+    if (prefersReducedMotion || !cardRef.current || !skillsRef.current) return;
+
+    // Skill badges elastic settle (continuous subtle bob)
+    const badges = skillsRef.current.querySelectorAll("[data-gsap-badge]");
+    if (badges.length) {
+      gsap.to(badges, {
+        y: -4,
+        duration: 0.7,
+        ease: "elastic.out(1, 0.3)",
+        stagger: { each: 0.1, from: "random" },
+        repeat: -1,
+        yoyo: true,
+        repeatDelay: 4,
+      });
+    }
+
+    // Mouse-follow tilt on hover
+    const toRotX = gsap.quickTo(cardRef.current, "rotationX", {
+      duration: 0.4,
+      ease: "power2.out",
+    });
+    const toRotY = gsap.quickTo(cardRef.current, "rotationY", {
+      duration: 0.4,
+      ease: "power2.out",
+    });
+
+    const onPointerMove = (e: PointerEvent) => {
+      const rect = cardRef.current!.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      toRotX((y - 0.5) * -8);
+      toRotY((x - 0.5) * 8);
+    };
+
+    const onPointerLeave = () => {
+      toRotX(0);
+      toRotY(0);
+    };
+
+    cardRef.current.addEventListener("pointermove", onPointerMove);
+    cardRef.current.addEventListener("pointerleave", onPointerLeave);
+
+    return () => {
+      cardRef.current?.removeEventListener("pointermove", onPointerMove);
+      cardRef.current?.removeEventListener("pointerleave", onPointerLeave);
+    };
+  }, { scope: cardRef, dependencies: [prefersReducedMotion], revertOnUpdate: true });
 
   return (
     <motion.div
+      ref={cardRef}
       className="relative flex h-full w-full flex-col items-center px-8 pb-10 pt-12"
       variants={stagger}
       initial="hidden"
       animate="visible"
+      style={{ opacity: revealProgress }}
     >
       {/* ─── Avatar (ring expands on hover) ─── */}
       <motion.div variants={fadeUp}>
@@ -114,6 +176,7 @@ export default function CardBack({
 
       {/* ─── Skills as shadcn Badges ─── */}
       <motion.div
+        ref={skillsRef}
         className="mt-6 flex flex-wrap justify-center gap-2.5"
         variants={stagger}
       >
@@ -122,6 +185,7 @@ export default function CardBack({
             <Badge
               variant="outline"
               className="border-border bg-surface px-3.5 py-1.5 font-sans text-[11px] font-semibold text-text-2 transition-all duration-200 hover:border-accent/30 hover:text-accent hover:shadow-[0_0_16px_rgba(58,90,70,0.1)] hover:scale-105"
+              data-gsap-badge
             >
               {skill}
             </Badge>

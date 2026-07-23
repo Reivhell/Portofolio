@@ -1,9 +1,13 @@
 "use client";
 
-import { useCallback } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { ArrowRight, MapPin, Globe } from "lucide-react";
+import { useCallback, useRef } from "react";
+import { motion, useReducedMotion } from "motion/react";
+import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+
+gsap.registerPlugin(useGSAP);
 
 interface CardFrontProps {
   avatarUrl?: string;
@@ -47,12 +51,50 @@ export default function CardFront({
   avatarUrl,
   name,
   role = "Software Engineer",
-  location = "Remote",
-  timezone = "GMT+8",
+  location = "Banjarmasin, Indonesia",
+  timezone = "GMT+8 ",
   onContactClick,
 }: CardFrontProps) {
   const [first, last] = splitName(name);
   const initials = getInitials(name);
+
+  const cardRef = useRef<HTMLDivElement>(null);
+  const sweepRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = useReducedMotion();
+
+  useGSAP(() => {
+    if (prefersReducedMotion || !cardRef.current || !sweepRef.current) return;
+
+    // Cursor-follow reflection sweep
+    const quickX = gsap.quickTo(sweepRef.current, "left", {
+      duration: 0.8,
+      ease: "power3.out",
+    });
+    const quickY = gsap.quickTo(sweepRef.current, "top", {
+      duration: 0.8,
+      ease: "power3.out",
+    });
+    const quickOpacity = gsap.quickTo(sweepRef.current, "opacity", {
+      duration: 0.4,
+    });
+
+    const onPointerMove = (e: PointerEvent) => {
+      const rect = cardRef.current!.getBoundingClientRect();
+      quickX(e.clientX - rect.left - 100);
+      quickY(e.clientY - rect.top - 100);
+      quickOpacity(1);
+    };
+
+    const onPointerLeave = () => quickOpacity(0);
+
+    cardRef.current.addEventListener("pointermove", onPointerMove);
+    cardRef.current.addEventListener("pointerleave", onPointerLeave);
+
+    return () => {
+      cardRef.current?.removeEventListener("pointermove", onPointerMove);
+      cardRef.current?.removeEventListener("pointerleave", onPointerLeave);
+    };
+  }, { scope: cardRef, dependencies: [prefersReducedMotion], revertOnUpdate: true });
 
   const handleContact = useCallback(
     (e: React.MouseEvent) => {
@@ -64,6 +106,7 @@ export default function CardFront({
 
   return (
     <motion.div
+      ref={cardRef}
       className="relative flex h-full w-full flex-col"
       variants={stagger}
       initial="hidden"
@@ -253,7 +296,7 @@ export default function CardFront({
 
           {/* Name + Online */}
           <div className="min-w-0 flex-1">
-            <p className="truncate font-sans text-[13px] font-semibold text-text-1">
+            <p className="truncate font-sans text-[13px] font-semib old text-text-1">
               {name}
             </p>
             <div className="flex items-center gap-1.5">
@@ -278,6 +321,17 @@ export default function CardFront({
           </button>
         </div>
       </motion.div>
+
+      {/* GSAP cursor-follow reflection */}
+      <div
+        ref={sweepRef}
+        className="pointer-events-none absolute z-30 size-[200px] rounded-full opacity-0"
+        style={{
+          background:
+            "radial-gradient(circle at center, rgba(255,255,255,0.12) 0%, transparent 65%)",
+        }}
+        aria-hidden="true"
+      />
     </motion.div>
   );
 }
