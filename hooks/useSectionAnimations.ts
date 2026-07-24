@@ -9,12 +9,22 @@ gsap.registerPlugin(ScrollTrigger, SplitText);
 
 /**
  * Unique per-section GSAP + ScrollTrigger animations layered on top of the
- * existing CSS reveal. Property choices avoid conflict with [data-reveal] CSS
- * (opacity / translateY) by animating different transforms, clip-paths, and
- * child elements.
+ * existing CSS reveal. Deferred to idle time so the initial render finishes
+ * before scroll-triggered animation setup begins.
  */
 export function useSectionAnimations() {
   useEffect(() => {
+    let cleanup: (() => void) | void;
+    const timer = setTimeout(() => { cleanup = initAnimations(); }, 300);
+    return () => {
+      clearTimeout(timer);
+      if (typeof cleanup === "function") cleanup();
+      ScrollTrigger.getAll().forEach((st) => st.kill());
+    };
+  }, []);
+}
+
+function initAnimations() {
     const reduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
@@ -437,5 +447,4 @@ export function useSectionAnimations() {
       cleanups.forEach((fn) => fn());
       ScrollTrigger.getAll().forEach((st) => st.kill());
     };
-  }, []);
 }

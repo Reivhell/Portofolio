@@ -26,6 +26,27 @@ export default function RootLayout({
   return (
     <html lang="en" className="antialiased no-js" suppressHydrationWarning>
       <head>
+        <link
+          rel="preload"
+          href="/font/Plus_Jakarta_Sans/PlusJakartaSans-VariableFont_wght.woff"
+          as="font"
+          type="font/woff"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/font/Inter/Inter-VariableFont_opsz,wght.woff"
+          as="font"
+          type="font/woff"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/font/Space_Mono/SpaceMono-Regular.woff"
+          as="font"
+          type="font/woff"
+          crossOrigin="anonymous"
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: "document.documentElement.classList.remove('no-js')",

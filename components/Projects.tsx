@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { ChevronDown } from "lucide-react";
 
 const projects = [
@@ -170,13 +171,15 @@ export default function Projects() {
                     href="#"
                     data-toast={p.toast}
                   >
-                    <img
+                    <Image
                       src={p.img}
                       alt={`${p.title} preview`}
-                      width={1200}
-                      height={900}
+                      fill
+                      sizes="(max-width: 900px) 100vw, (max-width: 1200px) 50vw, 600px"
+                      quality={80}
                       loading="lazy"
                       decoding="async"
+                      className="project-thumb"
                       onError={(e) =>
                         (e.currentTarget.style.display = "none")
                       }

@@ -200,14 +200,14 @@ export default function Hero() {
             className="hero-parallax"
           >
             <ProfileCard
-              avatarUrl="https://image.qwenlm.ai/public_source/6f86c30a-277c-406e-85df-03fdf435d303/1c216c180-f9a0-41db-96b1-3d4cac21fa2f.png"
+              avatarUrl="/images/avatar.webp"
               name="Ahmad David Alvees"
               role="Full-Stack Developer &amp; Mobile Developer"
-              location="Jakarta"
+              location="Banjarmasin, Indonesia"
               timezone="GMT+8"
               githubUrl="https://github.com/reivhell"
-              linkedinUrl="https://linkedin.com/in/reivhell"
-              email="david@example.com"
+              linkedinUrl="https://linkedin.com/in/david"
+              email="davidgame1945@gmail.com"
               onContactClick={() => scrollTo("contact")}
               className="w-full mx-auto"
             />

@@ -92,6 +92,7 @@ export default function Testimonials() {
   }, []);
 
   // GSAP ticker — 3D fisheye tunnel with depth-of-field blur + organic bob
+  // Paused via IntersectionObserver so the rAF loop doesn't run when scrolled past.
   useGSAP(
     () => {
       const track = trackRef.current;
@@ -100,10 +101,18 @@ export default function Testimonials() {
 
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
+      let paused = false;
+      const io = new IntersectionObserver(
+        ([entry]) => { paused = !entry.isIntersecting; },
+        { threshold: 0 }
+      );
+      io.observe(section);
+
       const cards = track.querySelectorAll<HTMLElement>(".t-card");
       if (!cards.length) return;
 
       function tick() {
+        if (paused) return;
         const half = window.innerWidth * 0.5;
         // gsap.ticker.time is a property, not a function
         const time = gsap.ticker.time;
@@ -159,7 +168,10 @@ export default function Testimonials() {
       }
 
       gsap.ticker.add(tick);
-      return () => gsap.ticker.remove(tick);
+      return () => {
+        gsap.ticker.remove(tick);
+        io.disconnect();
+      };
     },
     { scope: sectionRef },
   );
