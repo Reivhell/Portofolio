@@ -203,7 +203,7 @@ export default function MusicPlayer() {
             </div>
             <audio
               ref={audioRef}
-              src="/music/The 1975 - About You.flac"
+              src="/music/The 1975 - About You.mp3"
               preload="metadata"
             />
           </div>

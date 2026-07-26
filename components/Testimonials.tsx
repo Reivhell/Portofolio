@@ -99,6 +99,8 @@ export default function Testimonials() {
       const section = sectionRef.current;
       if (!track || !section) return;
 
+      if (window.innerWidth < 768) return; // CSS marquee is sufficient on mobile
+
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
       let paused = false;
@@ -133,8 +135,8 @@ export default function Testimonials() {
           // Depth fade: edges dissolve into the vignette
           const opacity = 1 - abs * 0.55;
 
-          // Depth-of-field: blur at edges, bright + sharp at center
-          const blur = (abs * 1.8).toFixed(1);
+          // Depth-of-field: subtle blur at edges, bright + sharp at center
+          const blur = (abs * 0.8).toFixed(1);
           const bright = 1 + (1 - abs) * 0.15;
           card.style.filter =
             blur !== "0.0"

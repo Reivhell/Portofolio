@@ -166,10 +166,11 @@ export default function Projects() {
                     transitionDelay: isExtra ? `${(i - INITIAL_COUNT) * 0.08}s` : "0s",
                   } as React.CSSProperties}
                 >
-                  <a
+                  <button
+                    type="button"
                     className="project-media"
-                    href="#"
                     data-toast={p.toast}
+                    aria-label={`${p.title} preview — coming soon`}
                   >
                     <Image
                       src={p.img}
@@ -184,7 +185,7 @@ export default function Projects() {
                         (e.currentTarget.style.display = "none")
                       }
                     />
-                  </a>
+                  </button>
                   <div className="project-body">
                     <p className="project-meta mono">
                       <span className="num">{p.num}</span>
@@ -218,7 +219,9 @@ export default function Projects() {
                       ))}
                     </ul>
                     <div className="project-links">
-                      <a href="#" data-toast={p.toast}>
+                      <button
+                      type="button"
+                      data-toast={p.toast}>
                         Live Demo{" "}
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -235,8 +238,10 @@ export default function Projects() {
                           <path d="M10 14 21 3" />
                           <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                         </svg>
-                      </a>
-                      <a href="#" data-toast={p.toast}>
+                      </button>
+                      <button
+                      type="button"
+                      data-toast={p.toast}>
                         Case Study{" "}
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -252,7 +257,7 @@ export default function Projects() {
                           <path d="M7 7h10v10" />
                           <path d="M7 17 17 7" />
                         </svg>
-                      </a>
+                      </button>
                     </div>
                   </div>
                 </article>

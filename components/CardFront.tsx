@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -58,6 +58,7 @@ export default function CardFront({
   const [first, last] = splitName(name);
   const initials = getInitials(name);
 
+  const [avatarFailed, setAvatarFailed] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const sweepRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
@@ -250,11 +251,12 @@ export default function CardFront({
         <div className="relative">
           <div className="absolute inset-0 scale-110 rounded-full bg-[radial-gradient(ellipse_at_35%_35%,var(--accent-tint),transparent_70%)]" />
           <div className="relative size-[170px] overflow-hidden rounded-full border-2 border-surface shadow-[var(--shadow-card)]">
-            {avatarUrl ? (
+            {avatarUrl && !avatarFailed ? (
               <img
                 src={avatarUrl}
                 alt={name}
                 className="h-full w-full object-cover"
+                onError={() => setAvatarFailed(true)}
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-sunken font-heading text-3xl font-bold text-accent">
@@ -281,11 +283,12 @@ export default function CardFront({
         <div className="flex items-center gap-3">
           {/* Mini avatar */}
           <div className="size-10 shrink-0 overflow-hidden rounded-full border border-border">
-            {avatarUrl ? (
+            {avatarUrl && !avatarFailed ? (
               <img
                 src={avatarUrl}
                 alt={name}
                 className="h-full w-full object-cover"
+                onError={() => setAvatarFailed(true)}
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-sunken text-xs font-semibold text-text-3">

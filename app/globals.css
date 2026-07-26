@@ -1791,7 +1791,7 @@
   gap: 18px;
   /* GSAP writes transforms via ticker — no CSS transition on transform */
   transition: box-shadow 0.18s var(--ease), border-color 0.18s var(--ease);
-  will-change: transform, filter;
+  will-change: transform, filter, box-shadow;
 }
 
 @media (min-width: 640px) {

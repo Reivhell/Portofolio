@@ -11,7 +11,7 @@ import Lenis from "lenis";
 import SpecularButton from "@/components/SpecularButton";
 
 export default function Footer() {
-  const [BanjarmasinTime, setBanjarmasinTime] = useState("");
+  const [BanjarmasinTime, setBanjarmasinTime] = useState("--:--:--");
   const [year, setYear] = useState<number | null>(null);
 
   useEffect(() => {
@@ -80,13 +80,13 @@ export default function Footer() {
             >
               Start a Conversation <Send />
             </SpecularButton>
-            <a
+            <button
               className="btn btn-ghost-dark"
-              href="#"
+              type="button"
               data-toast="CV download will be available soon."
             >
               <Download /> Download CV
-            </a>
+            </button>
           </div>
           <div className="social-row">
             <a
@@ -138,7 +138,7 @@ export default function Footer() {
             with intent.
           </p>
           <p className="mono footer-meta">
-            Banjarmasin · {BanjarmasinTime || "--:--:--"} LOCAL
+            Banjarmasin · {BanjarmasinTime} LOCAL
           </p>
           <a
             href="#home"

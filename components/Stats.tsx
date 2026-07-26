@@ -8,6 +8,11 @@ function CountUp({ target, suffix }: { target: number; suffix?: string }) {
   const frame = useRef(0);
 
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setVal(target);
+      return;
+    }
+
     const dur = 1400;
     const t0 = performance.now();
 
